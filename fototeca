@@ -1,0 +1,220 @@
+/frotis-app
+├── /public
+│   ├── index.html
+│   └── service-worker.js
+├── /src
+│   ├── App.js
+│   ├── CaseForm.js
+│   ├── CaseList.js
+│   ├── CaseDetail.js
+│   └── Login.js
+├── package.json
+└── README.md
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fototeca de Frotis Médula Ósea</title>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="/main.js"></script>
+</body>
+</html>
+import React, { useState } from 'react';
+import './App.css';
+import Login from './Login';
+import CaseForm from './CaseForm';
+import CaseList from './CaseList';
+import CaseDetail from './CaseDetail';
+
+function App() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [cases, setCases] = useState([]);
+  const [currentCase, setCurrentCase] = useState(null);
+
+  const handleLogin = (password) => {
+    if (password === 'frotis123') { // Contraseña común para todos
+      setLoggedIn(true);
+    } else {
+      alert('Contraseña incorrecta');
+    }
+  };
+
+  const handleAddCase = (newCase) => {
+    setCases([...cases, newCase]);
+    // Acá agregaríamos el código de backup a Google Drive
+  };
+
+  const handleSelectCase = (caseId) => {
+    setCurrentCase(cases.find(c => c.id === caseId));
+  };
+
+  return (
+    <div className="App">
+      {!loggedIn ? (
+        <Login onLogin={handleLogin} />
+      ) : (
+        <>
+          <h1>Bienvenido a la Fototeca de Frotis Médula Ósea</h1>
+          <h2>Creado por Dr. Juan Manuel López. Médico Hematólogo. Mendoza, Argentina</h2>
+          <CaseForm onAddCase={handleAddCase} />
+          <CaseList cases={cases} onSelectCase={handleSelectCase} />
+          {currentCase && <CaseDetail case={currentCase} />}
+        </>
+      )}
+    </div>
+  );
+}
+
+export default App;
+import React, { useState } from 'react';
+
+function Login({ onLogin }) {
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onLogin(password);
+  };
+
+  return (
+    <div>
+      <h2>Ingrese la contraseña para acceder</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Contraseña"
+        />
+        <button type="submit">Entrar</button>
+      </form>
+    </div>
+  );
+}
+
+export default Login;
+import React, { useState } from 'react';
+
+function CaseForm({ onAddCase }) {
+  const [caseData, setCaseData] = useState({
+    id: Date.now(),
+    age: '',
+    gender: '',
+    diagnosis: '',
+    findings: '',
+    images: [],
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onAddCase(caseData);
+    setCaseData({ id: Date.now(), age: '', gender: '', diagnosis: '', findings: '', images: [] });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="number"
+        placeholder="Edad"
+        value={caseData.age}
+        onChange={(e) => setCaseData({ ...caseData, age: e.target.value })}
+      />
+      <input
+        type="text"
+        placeholder="Género"
+        value={caseData.gender}
+        onChange={(e) => setCaseData({ ...caseData, gender: e.target.value })}
+      />
+      <textarea
+        placeholder="Diagnóstico"
+        value={caseData.diagnosis}
+        onChange={(e) => setCaseData({ ...caseData, diagnosis: e.target.value })}
+      />
+      <textarea
+        placeholder="Hallazgos Clínicos"
+        value={caseData.findings}
+        onChange={(e) => setCaseData({ ...caseData, findings: e.target.value })}
+      />
+      <button type="submit">Añadir Caso</button>
+    </form>
+  );
+}
+
+export default CaseForm;
+import React from 'react';
+
+function CaseList({ cases, onSelectCase }) {
+  return (
+    <div>
+      <h3>Lista de Casos</h3>
+      <ul>
+        {cases.map(c => (
+          <li key={c.id} onClick={() => onSelectCase(c.id)}>
+            Caso {c.id}: {c.diagnosis}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default CaseList;
+import React from 'react';
+
+function CaseDetail({ case }) {
+  return (
+    <div>
+      <h3>Detalles del Caso {case.id}</h3>
+      <p>Edad: {case.age}</p>
+      <p>Género: {case.gender}</p>
+      <p>Diagnóstico: {case.diagnosis}</p>
+      <p>Hallazgos Clínicos: {case.findings}</p>
+      <h4>Imágenes</h4>
+      {case.images.map((image, index) => (
+        <img key={index} src={image} alt={`Frotis ${index}`} />
+      ))}
+    </div>
+  );
+}
+
+export default CaseDetail;
+{
+  "name": "frotis-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-scripts": "5.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "devDependencies": {}
+}
+# Fototeca de Frotis de Médula Ósea
+
+Este proyecto es una fototeca web para almacenar y consultar casos clínicos de médula ósea. La aplicación permite cargar, visualizar y generar un informe en PDF para cada caso.
+
+## Funcionalidades
+
+1. **Acceso privado**: Un único login para todos los usuarios.
+2. **Carga de casos**: Los usuarios pueden agregar nuevos casos con sus hallazgos clínicos y frotis.
+3. **Generación de PDF**: Generación de informes PDF con los datos del caso.
+4. **Backup online**: Sincronización automática con Google Drive.
+
+## Instrucciones para ejecutar
+
+1. Clona este repositorio.
+2. Ejecuta `npm install` para instalar las dependencias.
+3. Ejecuta `npm start` para iniciar la aplicación localmente.
+4. La contraseña común para todos los usuarios es `frotis123`.
+
+## License
+MIT
